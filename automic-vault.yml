@@ -1,0 +1,37 @@
+name:
+  isotope:kubectl
+
+replaces:
+  brew:kubernetes-cli
+
+build: |
+  case "$(uname -m)" in
+    arm64) arch=arm64 ;;
+    x86_64) arch=amd64 ;;
+    *) echo "unsupported macOS architecture: $(uname -m)" >&2; exit 1 ;;
+  esac
+  base="https://dl.k8s.io/release/${TAG}/bin/darwin/${arch}"
+  mkdir -p bin
+  curl --fail --silent --show-error --location --output bin/kubectl "${base}/kubectl"
+  expected="$(curl --fail --silent --show-error --location "${base}/kubectl.sha256")"
+  actual="$(shasum -a 256 bin/kubectl | awk '{ print $1 }')"
+  test "${actual}" = "${expected}"
+  chmod 755 bin/kubectl
+  test "$(bin/kubectl version --client -o json | jq -r '.clientVersion.gitVersion')" = "${TAG}"
+  codesign --force --options runtime --timestamp \
+    --identifier kubectl \
+    --sign "$CODESIGN_IDENTITY" \
+    bin/kubectl
+  tar czf out.tgz bin/kubectl
+
+justification:
+  title:
+    Unprotected Credential Access
+  detail: |
+    kubeconfig can store bearer tokens, client certificates, and private keys
+    in plaintext. Upstream macOS kubectl binaries are ad-hoc signed, so they do
+    not establish the verified Target identity required for credential release.
+
+    This Isotope preserves Kubernetes' official kubectl binary and adds only an
+    Automic Vault Developer ID signature with Hardened Runtime and no
+    entitlements. The Hardener uses kubectl's native ExecCredential protocol.
