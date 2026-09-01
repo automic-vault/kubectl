@@ -1,3 +1,23 @@
+# Automic Vault Fork Notes
+
+This repository is the Automic Vault fork used for the kubectl Isotope.
+
+Automic Vault is a macOS-first system that keeps developer credentials in
+custody and applies them only after policy or the user allows the complete
+operation requested by verified software.
+
+The [kubectl Hardener work](https://github.com/automic-vault/automic-vault/issues/186)
+uses Kubernetes' native `ExecCredential` protocol without patching kubectl. The
+release process verifies Kubernetes' official macOS kubectl binary, then signs
+those unmodified bits with Developer ID, Hardened Runtime, and no entitlements.
+The Hardener moves supported inline kubeconfig credentials to Automic Vault and
+binds each request to its kubeconfig user and Kubernetes API server.
+
+This source fork alone does not establish Hardened State. The remainder of this
+README is the original upstream README.
+
+---
+
 # Kubernetes (K8s)
 
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/569/badge)](https://bestpractices.coreinfrastructure.org/projects/569) [![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/kubernetes)](https://goreportcard.com/report/github.com/kubernetes/kubernetes) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kubernetes/kubernetes?sort=semver)
